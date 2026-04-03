@@ -1,0 +1,5 @@
+fastapi>=0.115
+uvicorn>=0.34
+psutil>=6.1
+httpx>=0.28
+websockets>=13

@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenClaw Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      --bg-body: linear-gradient(135deg, #e0f2fe 0%, #f1f5f9 50%, #e2e8f0 100%);
+      --bg-card: rgba(255, 255, 255, 0.9);
+      --bg-card-hover: rgba(255, 255, 255, 0.95);
+      --bg-header: rgba(255, 255, 255, 0.7);
+      --bg-info: rgba(241, 245, 249, 0.8);
+      --text-primary: #1e293b;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --text-faint: #94a3b8;
+      --border-default: rgba(148, 163, 184, 0.3);
+      --border-hover: rgba(99, 102, 241, 0.4);
+      --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
+      --shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+      --color-running: #22c55e;
+      --color-running-bg: rgba(34, 197, 94, 0.1);
+      --color-running-border: rgba(34, 197, 94, 0.3);
+      --color-stopped: #ef4444;
+      --color-stopped-bg: rgba(239, 68, 68, 0.08);
+      --color-stopped-border: rgba(239, 68, 68, 0.3);
+      --color-unreachable: #f59e0b;
+      --color-unreachable-bg: rgba(245, 158, 11, 0.08);
+      --color-unreachable-border: rgba(245, 158, 11, 0.3);
+      --color-accent: #6366f1;
+      --color-accent-hover: #4f46e5;
+      --toggle-bg-off: #cbd5e1;
+      --toggle-bg-on: #22c55e;
+      --toggle-knob: #ffffff;
+    }
+
+    [data-theme="dark"] {
+      --bg-body: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      --bg-card: rgba(15, 23, 42, 0.85);
+      --bg-card-hover: rgba(15, 23, 42, 0.95);
+      --bg-header: rgba(15, 23, 42, 0.7);
+      --bg-info: rgba(30, 41, 59, 0.6);
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --text-faint: #64748b;
+      --border-default: rgba(148, 163, 184, 0.15);
+      --border-hover: rgba(99, 102, 241, 0.4);
+      --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3);
+      --shadow-card-hover: 0 4px 16px rgba(0, 0, 0, 0.4);
+      --color-running-bg: rgba(34, 197, 94, 0.12);
+      --color-stopped-bg: rgba(239, 68, 68, 0.1);
+      --color-unreachable-bg: rgba(245, 158, 11, 0.1);
+      --toggle-bg-off: #475569;
+    }
+
+    html, body {
+      height: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      background: var(--bg-body);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    .header {
+      background: var(--bg-header);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-default);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .refresh-indicator {
+      font-size: 12px;
+      color: var(--text-faint);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .refresh-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--color-running);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .theme-toggle {
+      background: none;
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--border-hover);
+      color: var(--text-primary);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      transition: all 0.25s ease;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-card-hover);
+      border-color: var(--border-hover);
+      transform: translateY(-1px);
+    }
+
+    .card-header {
+      padding: 20px 20px 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .card-identity {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .card-name {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .card-location {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-faint);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .location-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--text-faint);
+    }
+
+    .card-status {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .status-badge.running {
+      background: var(--color-running-bg);
+      color: var(--color-running);
+      border: 1px solid var(--color-running-border);
+    }
+
+    .status-badge.stopped {
+      background: var(--color-stopped-bg);
+      color: var(--color-stopped);
+      border: 1px solid var(--color-stopped-border);
+    }
+
+    .status-badge.unreachable {
+      background: var(--color-unreachable-bg);
+      color: var(--color-unreachable);
+      border: 1px solid var(--color-unreachable-border);
+    }
+
+    .status-badge.starting {
+      background: var(--color-unreachable-bg);
+      color: var(--color-unreachable);
+      border: 1px solid var(--color-unreachable-border);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .status-dot.running { background: var(--color-running); }
+    .status-dot.stopped { background: var(--color-stopped); }
+    .status-dot.unreachable { background: var(--color-unreachable); }
+    .status-dot.starting { background: var(--color-unreachable); animation: pulse 1s ease-in-out infinite; }
+
+    /* Toggle switch */
+    .toggle-switch {
+      position: relative;
+      width: 48px;
+      height: 26px;
+      cursor: pointer;
+    }
+
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--toggle-bg-off);
+      border-radius: 26px;
+      transition: background 0.3s;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      left: 3px;
+      bottom: 3px;
+      background: var(--toggle-knob);
+      border-radius: 50%;
+      transition: transform 0.3s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+      background: var(--toggle-bg-on);
+    }
+
+    .toggle-switch input:checked + .toggle-slider::before {
+      transform: translateX(22px);
+    }
+
+    .toggle-switch.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .toggle-switch.loading .toggle-slider::before {
+      animation: pulse 0.8s ease-in-out infinite;
+    }
+
+    /* Info panel */
+    .card-info {
+      padding: 0 20px 20px;
+    }
+
+    .info-grid {
+      background: var(--bg-info);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .info-label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-faint);
+    }
+
+    .info-value {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .info-value.na {
+      color: var(--text-faint);
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .info-value.model {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      appearance: none;
+      border: 1px solid var(--border-default);
+      background: rgba(99, 102, 241, 0.08);
+      color: var(--text-primary);
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .action-btn:hover {
+      border-color: var(--border-hover);
+      background: rgba(99, 102, 241, 0.14);
+    }
+
+    .action-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .action-btn--primary {
+      background: var(--color-accent);
+      border-color: transparent;
+      color: white;
+    }
+
+    .action-btn--primary:hover {
+      background: var(--color-accent-hover);
+      border-color: transparent;
+    }
+
+    .modal-root {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      pointer-events: none;
+    }
+
+    .modal-root.active {
+      pointer-events: auto;
+    }
+
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.62);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .modal-card {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: min(520px, calc(100vw - 32px));
+      transform: translate(-50%, -50%);
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: 18px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
+      padding: 22px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .modal-subtitle {
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.45;
+      margin-top: 4px;
+    }
+
+    .modal-close {
+      appearance: none;
+      border: 1px solid var(--border-default);
+      background: transparent;
+      color: var(--text-muted);
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .modal-field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .modal-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+    }
+
+    .model-select {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border-default);
+      background: var(--bg-info);
+      color: var(--text-primary);
+      padding: 12px 14px;
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    .modal-current {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: var(--bg-info);
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .modal-current code {
+      font-size: 12px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    /* Toast notification */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-default);
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 13px;
+      color: var(--text-primary);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s ease;
+      max-width: 320px;
+    }
+
+    .toast.error {
+      border-color: var(--color-stopped-border);
+      color: var(--color-stopped);
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Summary bar */
+    .summary {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 24px;
+      padding: 14px 20px;
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-default);
+      border-radius: 12px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .summary-stat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .summary-count {
+      font-weight: 600;
+      font-size: 20px;
+      color: var(--text-primary);
+    }
+
+    @media (max-width: 600px) {
+      .header { padding: 12px 16px; }
+      .container { padding: 20px 16px; }
+      .grid { grid-template-columns: 1fr; }
+      .summary { flex-wrap: wrap; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <h1>OpenClaw</h1>
+    </div>
+    <div class="header-right">
+      <div class="refresh-indicator">
+        <div class="refresh-dot"></div>
+        <span id="refresh-text">Auto-refresh</span>
+      </div>
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <span id="theme-icon">Light</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="summary" id="summary"></div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="toast-container" id="toasts"></div>
+  <div class="modal-root" id="model-modal-root"></div>
+
+  <script>
+    const REFRESH_INTERVAL = 5000;
+    const INSTANCE_ORDER = ['jay', 'jayhova', 'jarvis', 'jaycloud'];
+    let state = {};
+    let pendingActions = {};
+    let modelDialogState = {
+      instanceId: null,
+      selectedModel: '',
+      saving: false,
+    };
+
+    // -- Theme --
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      document.getElementById('theme-icon').textContent = next === 'dark' ? 'Light' : 'Dark';
+    }
+
+    (function initTheme() {
+      const saved = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', saved);
+      document.getElementById('theme-icon').textContent = saved === 'dark' ? 'Light' : 'Dark';
+    })();
+
+    // -- Toast --
+    function showToast(msg, isError) {
+      const container = document.getElementById('toasts');
+      const el = document.createElement('div');
+      el.className = 'toast' + (isError ? ' error' : '');
+      el.textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // -- Uptime formatting --
+    function formatUptime(seconds) {
+      if (!seconds || seconds < 0) return '--';
+      const d = Math.floor(seconds / 86400);
+      const h = Math.floor((seconds % 86400) / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      if (d > 0) return d + 'd ' + h + 'h';
+      if (h > 0) return h + 'h ' + m + 'm';
+      return m + 'm';
+    }
+
+    function formatMemory(mb) {
+      if (!mb) return '--';
+      if (mb >= 1024) return (mb / 1024).toFixed(1) + ' GB';
+      return Math.round(mb) + ' MB';
+    }
+
+    function getSelectedModelOption(inst) {
+      if (!inst || !inst.available_models) return null;
+      return inst.available_models.find((entry) => entry.id === inst.current_model) || null;
+    }
+
+    function formatModelLabel(inst) {
+      const model = getSelectedModelOption(inst);
+      if (!model && !inst?.current_model) return '--';
+      const label = model?.name && model.name !== model.id ? model.name : (inst.current_model || model?.id || '--');
+      return label;
+    }
+
+    function formatModelDetail(inst) {
+      const model = getSelectedModelOption(inst);
+      if (!model && !inst?.current_model) return '--';
+      const parts = [inst.current_model || model?.id || '--'];
+      if (model?.alias) parts.push('alias: ' + model.alias);
+      return parts.join(' · ');
+    }
+
+    // -- API --
+    async function fetchStatus() {
+      try {
+        const resp = await fetch('/api/status');
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        state = await resp.json();
+        render();
+      } catch (e) {
+        document.getElementById('refresh-text').textContent = 'Connection lost';
+      }
+    }
+
+    async function toggleInstance(id) {
+      if (pendingActions[id]) return;
+      const inst = state[id];
+      if (!inst || inst.status === 'unreachable') return;
+
+      const action = inst.status === 'running' ? 'stop' : 'start';
+      pendingActions[id] = true;
+      render();
+
+      try {
+        const resp = await fetch('/api/' + id + '/' + action, { method: 'POST' });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || 'Failed');
+        showToast(data.message || (inst.name + ' ' + action + ' requested'));
+      } catch (e) {
+        showToast('Error: ' + e.message, true);
+      } finally {
+        // Wait a moment for the process to start/stop, then refresh
+        setTimeout(async () => {
+          delete pendingActions[id];
+          await fetchStatus();
+        }, 2000);
+      }
+    }
+
+    function openModelDialog(id) {
+      const inst = state[id];
+      if (!inst || !inst.available_models || inst.available_models.length === 0) return;
+      modelDialogState = {
+        instanceId: id,
+        selectedModel: inst.current_model || inst.available_models[0].id,
+        saving: false,
+      };
+      renderModelDialog();
+    }
+
+    function closeModelDialog() {
+      modelDialogState = { instanceId: null, selectedModel: '', saving: false };
+      renderModelDialog();
+    }
+
+    function setModelSelection(value) {
+      modelDialogState = { ...modelDialogState, selectedModel: value };
+      renderModelDialog();
+    }
+
+    async function saveModelChange() {
+      const id = modelDialogState.instanceId;
+      const model = modelDialogState.selectedModel;
+      if (!id || !model || modelDialogState.saving) return;
+
+      modelDialogState = { ...modelDialogState, saving: true };
+      renderModelDialog();
+
+      try {
+        const resp = await fetch('/api/' + id + '/model', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || 'Failed');
+        showToast(data.message || 'Model updated');
+        await fetchStatus();
+        closeModelDialog();
+      } catch (e) {
+        modelDialogState = { ...modelDialogState, saving: false };
+        renderModelDialog();
+        showToast('Error: ' + e.message, true);
+      }
+    }
+
+    // -- Render --
+    function render() {
+      renderSummary();
+      renderGrid();
+      renderModelDialog();
+    }
+
+    function renderSummary() {
+      const el = document.getElementById('summary');
+      const instances = INSTANCE_ORDER.map(id => state[id]).filter(Boolean);
+      const running = instances.filter(i => i.status === 'running').length;
+      const stopped = instances.filter(i => i.status === 'stopped').length;
+      const unreachable = instances.filter(i => i.status === 'unreachable').length;
+
+      el.innerHTML =
+        '<div class="summary-stat"><span class="summary-count">' + instances.length + '</span> Instances</div>' +
+        '<div class="summary-stat"><span class="status-dot running"></span> ' + running + ' Running</div>' +
+        '<div class="summary-stat"><span class="status-dot stopped"></span> ' + stopped + ' Stopped</div>' +
+        (unreachable > 0 ? '<div class="summary-stat"><span class="status-dot unreachable"></span> ' + unreachable + ' Unreachable</div>' : '');
+
+      document.getElementById('refresh-text').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+
+      for (const id of INSTANCE_ORDER) {
+        const inst = state[id];
+        if (!inst) continue;
+
+        const loading = !!pendingActions[id];
+        const statusClass = loading ? 'starting' : inst.status;
+        const isRunning = inst.status === 'running';
+        const isUnreachable = inst.status === 'unreachable';
+        const locationLabel = inst.location === 'cloud' ? 'Hetzner Cloud' : 'Local Machine';
+        const hasModelOptions = Array.isArray(inst.available_models) && inst.available_models.length > 0;
+        const gatewayAction = inst.gateway_url
+          ? '<a class="action-btn" href="' + escapeHtml(inst.gateway_url) + '" target="_blank" rel="noreferrer">Open Gateway</a>'
+          : '<button class="action-btn" disabled>No Gateway Link</button>';
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML =
+          '<div class="card-header">' +
+            '<div class="card-identity">' +
+              '<div class="card-name">' + inst.name + '</div>' +
+              '<div class="card-location"><span class="location-dot"></span>' + locationLabel + (inst.port ? ' : ' + inst.port : '') + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="card-status">' +
+            '<div class="status-badge ' + statusClass + '">' +
+              '<span class="status-dot ' + statusClass + '"></span>' +
+              (loading ? 'Processing...' : capitalize(inst.status)) +
+            '</div>' +
+            '<label class="toggle-switch' + (loading ? ' loading' : '') + (isUnreachable ? ' disabled' : '') + '">' +
+              '<input type="checkbox"' + (isRunning ? ' checked' : '') + (isUnreachable || loading ? ' disabled' : '') +
+                ' onchange="toggleInstance(\'' + id + '\')">' +
+              '<span class="toggle-slider"></span>' +
+            '</label>' +
+          '</div>' +
+          '<div class="card-info">' +
+            '<div class="info-grid">' +
+              '<div class="info-item">' +
+                '<span class="info-label">Uptime</span>' +
+                '<span class="info-value' + (!inst.uptime_seconds ? ' na' : '') + '">' + formatUptime(inst.uptime_seconds) + '</span>' +
+              '</div>' +
+              '<div class="info-item">' +
+                '<span class="info-label">Memory</span>' +
+                '<span class="info-value' + (!inst.memory_mb ? ' na' : '') + '">' + formatMemory(inst.memory_mb) + '</span>' +
+              '</div>' +
+              '<div class="info-item">' +
+                '<span class="info-label">PIDs</span>' +
+                '<span class="info-value' + (!inst.pids ? ' na' : '') + '">' + (inst.pids ? inst.pids.join(', ') : '--') + '</span>' +
+              '</div>' +
+              '<div class="info-item">' +
+                '<span class="info-label">Port</span>' +
+                '<span class="info-value">' + (inst.port || '--') + '</span>' +
+              '</div>' +
+              '<div class="info-item">' +
+                '<span class="info-label">Model</span>' +
+                '<span class="info-value model' + (!inst.current_model ? ' na' : '') + '">' + escapeHtml(formatModelDetail(inst)) + '</span>' +
+              '</div>' +
+              '<div class="info-item">' +
+                '<span class="info-label">Fallbacks</span>' +
+                '<span class="info-value' + (!inst.fallback_models || inst.fallback_models.length === 0 ? ' na' : '') + '">' + (inst.fallback_models && inst.fallback_models.length ? inst.fallback_models.length : '--') + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="card-actions">' +
+              '<button class="action-btn action-btn--primary"' + (hasModelOptions ? '' : ' disabled') + ' onclick="openModelDialog(\'' + id + '\')">Choose Model</button>' +
+              gatewayAction +
+            '</div>' +
+          '</div>';
+
+        grid.appendChild(card);
+      }
+    }
+
+    function renderModelDialog() {
+      const root = document.getElementById('model-modal-root');
+      const inst = modelDialogState.instanceId ? state[modelDialogState.instanceId] : null;
+      if (!inst) {
+        root.className = 'modal-root';
+        root.innerHTML = '';
+        return;
+      }
+
+      const options = (inst.available_models || []).map((entry) => {
+        const detail = entry.name && entry.name !== entry.id ? entry.name + ' - ' + entry.id : entry.id;
+        const alias = entry.alias ? ' (' + entry.alias + ')' : '';
+        return '<option value="' + escapeHtml(entry.id) + '"' +
+          (entry.id === modelDialogState.selectedModel ? ' selected' : '') + '>' +
+          escapeHtml(detail + alias) + '</option>';
+      }).join('');
+
+      root.className = 'modal-root active';
+      root.innerHTML =
+        '<div class="modal-backdrop" onclick="closeModelDialog()"></div>' +
+        '<div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="model-dialog-title">' +
+          '<div class="modal-header">' +
+            '<div>' +
+              '<div class="modal-title" id="model-dialog-title">' + escapeHtml(inst.name) + ' Model</div>' +
+              '<div class="modal-subtitle">Switch the default primary model for this OpenClaw instance. The change is written to its config and used on the next request.</div>' +
+            '</div>' +
+            '<button class="modal-close" onclick="closeModelDialog()" aria-label="Close">×</button>' +
+          '</div>' +
+          '<div class="modal-field">' +
+            '<label class="modal-label" for="model-select">Available Models</label>' +
+            '<select id="model-select" class="model-select" onchange="setModelSelection(this.value)"' + (modelDialogState.saving ? ' disabled' : '') + '>' +
+              options +
+            '</select>' +
+          '</div>' +
+          '<div class="modal-current">Current primary: <code>' + escapeHtml(inst.current_model || '--') + '</code></div>' +
+          '<div class="modal-actions">' +
+            '<button class="action-btn" onclick="closeModelDialog()"' + (modelDialogState.saving ? ' disabled' : '') + '>Cancel</button>' +
+            '<button class="action-btn action-btn--primary" onclick="saveModelChange()"' + (modelDialogState.saving ? ' disabled' : '') + '>' +
+              (modelDialogState.saving ? 'Saving...' : 'Save Model') +
+            '</button>' +
+          '</div>' +
+        '</div>';
+    }
+
+    function capitalize(s) {
+      return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+    }
+
+    // -- Init --
+    fetchStatus();
+    setInterval(fetchStatus, REFRESH_INTERVAL);
+  </script>
+</body>
+</html>

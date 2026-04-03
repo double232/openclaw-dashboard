@@ -1,0 +1,21 @@
+{
+  "instances": {
+    "my-gateway": {
+      "port": 18789,
+      "state_dir": "C:\\Users\\you\\.openclaw",
+      "start_script": "C:\\Users\\you\\.openclaw\\start-hidden.vbs",
+      "start_cmd": ["cscript", "//nologo", "C:\\Users\\you\\.openclaw\\start-hidden.vbs"],
+      "display_name": "MyGateway"
+    },
+    "second-gateway": {
+      "port": 18804,
+      "state_dir": "C:\\Users\\you\\.openclaw-second",
+      "start_script": "C:\\Users\\you\\.openclaw-second\\start-gateway.ps1",
+      "start_cmd": [
+        "powershell", "-Command",
+        "Start-Process -WindowStyle Hidden -FilePath pwsh -ArgumentList '-ExecutionPolicy Bypass -File C:\\Users\\you\\.openclaw-second\\start-gateway.ps1' -WorkingDirectory 'C:\\Users\\you\\.openclaw-second'"
+      ],
+      "display_name": "SecondGateway"
+    }
+  }
+}

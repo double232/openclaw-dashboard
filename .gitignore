@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+*.pyo
+
+# Runtime
+*.log
+certs/
+
+# Local config (contains machine-specific paths)
+local-agent/config.json
+
+# Environment
+.env
+
+# Internal planning docs
+PLAN.md
+
+# Throwaway test scripts
+local-agent/test_start.py

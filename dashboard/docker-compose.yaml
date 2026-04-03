@@ -1,0 +1,16 @@
+services:
+  openclaw-dashboard:
+    build: .
+    expose:
+      - "8860"
+    volumes:
+      - /run/dbus/system_bus_socket:/run/dbus/system_bus_socket
+    networks:
+      - web_proxy
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  web_proxy:
+    external: true
