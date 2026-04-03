@@ -20,7 +20,7 @@ Browser --> Reverse Proxy (Caddy, nginx, etc.) --> Dashboard Container
                                for cloud instance              to local agent
                                                                |         |
                                                           Instance A   Instance B
-                                                           (18789)     (18804)
+                                                            
 ```
 
 The dashboard backend does two things:
