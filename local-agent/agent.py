@@ -26,8 +26,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def _load_instances_config() -> dict:
-    """Load instance definitions from config.json.
+def _load_config() -> dict:
+    """Load agent config from config.json.
 
     Copy config.example.json to config.json and edit for your setup.
     """
@@ -50,17 +50,15 @@ def _load_instances_config() -> dict:
             "start_cmd": cfg["start_cmd"],
             "display_name": cfg.get("display_name", instance_id),
         }
-    return instances
+    return raw, instances
 
 
-INSTANCES = _load_instances_config()
+_RAW_CONFIG, INSTANCES = _load_config()
 
-LOCAL_GATEWAY_HOST = os.getenv("OPENCLAW_PUBLIC_HOST", "").strip()
-LOCAL_GATEWAY_SCHEME = os.getenv("OPENCLAW_PUBLIC_SCHEME", "http").strip() or "http"
+LOCAL_GATEWAY_HOST = _RAW_CONFIG.get("public_host", "").strip()
+LOCAL_GATEWAY_SCHEME = _RAW_CONFIG.get("public_scheme", "http").strip() or "http"
 INSTANCE_GATEWAY_URL_ENV = {
-    "jay": "OPENCLAW_JAY_GATEWAY_URL",
-    "jayhova": "OPENCLAW_JAYHOVA_GATEWAY_URL",
-    "jarvis": "OPENCLAW_JARVIS_GATEWAY_URL",
+    iid: f"OPENCLAW_{iid.upper()}_GATEWAY_URL" for iid in INSTANCES
 }
 PROXY_BASE_PREFIX = "/proxy"
 PROXY_HEADER_BASE_PATH = "x-openclaw-proxy-base-path"

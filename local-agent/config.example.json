@@ -1,4 +1,6 @@
 {
+  "public_host": "100.x.x.x",
+  "public_scheme": "http",
   "instances": {
     "my-gateway": {
       "port": 18789,
