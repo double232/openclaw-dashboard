@@ -125,7 +125,7 @@ docker compose up -d --build
 
 The container exposes port 8860 internally and expects to be on a `web_proxy` Docker network (shared with your reverse proxy). Adjust `docker-compose.yaml` if your setup is different.
 
-For the cloud instance (the one on the same Linux box), the dashboard calls `systemctl start/stop openclaw-jay` directly. The container mounts the D-Bus socket for this. If your systemd service has a different name, grep for `openclaw-jay` in `app/main.py` and change it.
+For the cloud instance (the one on the same Linux box), the dashboard calls `systemctl start/stop openclaw` directly. The container mounts the D-Bus socket for this. If your systemd service has a different name, grep for `openclaw` in `app/main.py` and change it.
 
 ### 3. Reverse proxy
 
