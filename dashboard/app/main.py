@@ -603,7 +603,7 @@ async def _get_local_statuses() -> dict:
                 "gateway_url": f"{_dashboard_gateway_path(inst)}/",
                 "gateway_base_path": _dashboard_gateway_path(inst),
             }
-            for inst, name in [("jay", "Jay"), ("jayhova", "JayHova"), ("jarvis", "JARVIS")]
+            for inst, name in [("jay", "Jay"), ("jayhova", "JayHova"), ("jarvis", "JARVIS"), ("livermore", "Livermore")]
         }
 
 
